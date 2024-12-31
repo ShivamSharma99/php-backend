@@ -10,14 +10,17 @@ COPY . /var/www/html
 # Enable Apache rewrite module
 RUN a2enmod rewrite
 
-# Set DirectoryIndex to prioritize index.php
-RUN echo "DirectoryIndex index.php index.html" > /etc/apache2/mods-enabled/dir.conf
+# Install required PHP extensions and MySQL
+RUN apt-get update && apt-get install -y \
+    mariadb-server \
+    mariadb-client \
+    && docker-php-ext-install mysqli pdo pdo_mysql
 
-# Install required PHP extensions
-RUN docker-php-ext-install mysqli pdo pdo_mysql
+# Start MySQL service
+RUN service mysql start
 
 # Expose port 80 for Apache
 EXPOSE 80
 
-# Start Apache server
-CMD ["apache2-foreground"]
+# Start MySQL and Apache
+CMD service mysql start && apache2-foreground
